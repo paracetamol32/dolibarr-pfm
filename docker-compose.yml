@@ -1,0 +1,68 @@
+version: "2.3"
+
+volumes:
+  db:
+  data:
+  documents:
+  scripts:
+
+services:
+  # https://docs.docker.com/docker-hub/builds/automated-testing/
+  sut:
+    build:
+      context: ./test
+      dockerfile: Dockerfile
+    depends_on:
+      - dolibarr
+      - dolibarr_nginx
+    volumes_from:
+      - dolibarr
+    volumes:
+      - data:/var/www/html
+      - documents:/var/www/documents
+      - scripts:/var/www/scripts
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    environment:
+      - DOCKER_TEST_CONTAINER=dolibarr
+      - DOCKER_WEB_CONTAINER=dolibarr_nginx
+      - DOLI_DB_NAME=${DOLIBARR_DB_NAME}
+      - DOLI_DB_USER=${DOLIBARR_DB_USER}
+      - DOLI_DB_PASSWORD=${DOLIBARR_DB_PASSWORD}
+
+  dolibarr:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args: 
+        - TAG=${TAG}
+        - VCS_REF=${VCS_REF}
+        - BUILD_DATE=${BUILD_DATE}
+    image: ${IMAGE_NAME}
+    container_name: dolibarr
+    #restart: always
+    depends_on:
+      dolibarr_db:
+        condition: service_healthy
+    links:
+      - dolibarr_db
+    expose:
+      - "9000"
+    #ports:
+    #  - "9090:9000"
+    volumes:
+      - data:/var/www/html
+      - documents:/var/www/documents
+      - scripts:/var/www/scripts
+      #- /srv/dolibarr/html:/var/www/html
+      #- /srv/dolibarr/documents:/var/www/documents
+      #- /srv/dolibarr/scripts:/var/www/scripts
+    environment:
+      - DOLI_DB_TYPE=pgsql
+      - DOLI_DB_HOST=dolibarr_db # same as pgsql container name
+      - DOLI_DB_PORT=5432
+      - DOLI_DB_NAME=${DOLIBARR_DB_NAME}
+      - DOLI_DB_USER=${DOLIBARR_DB_USER}
+      - DOLI_DB_PASSWORD=${DOLIBARR_DB_PASSWORD}
+
+  

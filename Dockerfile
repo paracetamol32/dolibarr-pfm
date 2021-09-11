@@ -120,8 +120,8 @@ RUN set -ex; \
 	cp -r "/tmp/dolibarr/dolibarr-${DOLI_VERSION}"/* /usr/src/dolibarr; \
 	rm -rf /tmp/dolibarr; \
 	chmod +x /usr/src/dolibarr/scripts/*; \
-    echo "${DOLI_VERSION}" > /usr/src/dolibarr/.docker-image-version; \
-    echo "<?php phpinfo();?>" > /usr/src/dolibarr/html/info.php
+    echo "${DOLI_VERSION}" > /usr/src/dolibarr/.docker-image-version
+    
 
 COPY entrypoint.sh /
 RUN set -ex; \
